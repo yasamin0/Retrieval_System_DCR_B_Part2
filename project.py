@@ -7,6 +7,32 @@ from bs4 import BeautifulSoup
 import tkinter as tk
 from tkinter import messagebox, ttk
 
+# Ensure nltk resources are downloaded
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
+
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk.corpus import wordnet
+
+# Define stop words and custom stop list
+stop_words = set(stopwords.words('english'))
+custom_stop_list = set([
+    "i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours",
+    "yourself", "yourselves", "he", "him", "his", "himself", "she", "her", "hers",
+    "herself", "it", "its", "itself", "they", "them", "their", "theirs", "themselves",
+    "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are",
+    "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does",
+    "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until",
+    "while", "of", "at", "by", "for", "with", "about", "against", "between", "into",
+    "through", "during", "before", "after", "above", "below", "to", "from", "up", "down",
+    "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here",
+    "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", "more",
+    "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so",
+    "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"
+])
+
 # Step 1: Read Documents
 def read_documents(directory):
     documents = {}
@@ -26,19 +52,9 @@ def read_documents(directory):
     return documents
 
 # Step 2: Preprocess Text
-nltk.download('punkt')
-from nltk.tokenize import word_tokenize
-
-nltk.download('stopwords')
-from nltk.corpus import stopwords
-stop_words = set(stopwords.words('english'))
-
-nltk.download('wordnet')
-from nltk.corpus import wordnet
-
 def preprocess(text):
     tokens = word_tokenize(text.lower())
-    tokens = [word for word in tokens if word not in string.punctuation and word not in stop_words]
+    tokens = [word for word in tokens if word not in string.punctuation and word not in stop_words and word not in custom_stop_list]
     return tokens
 
 def get_synonyms(term):
