@@ -189,8 +189,8 @@ def search_gui():
         for i in tree.get_children():
             tree.delete(i)
         if search_results:
-            for result, score, used_terms, used_biword, used_skiplist in search_results:
-                tree.insert('', 'end', values=(result, ', '.join(used_terms), 'Yes' if used_biword else 'No', 'Yes' if used_skiplist else 'No', ' '.join(terms), score))
+            for idx, (result, score, used_terms, used_biword, used_skiplist) in enumerate(search_results, 1):
+                tree.insert('', 'end', values=(idx, result, ', '.join(used_terms), 'Yes' if used_biword else 'No', 'Yes' if used_skiplist else 'No', ' '.join(terms), score))
         else:
             messagebox.showinfo("Search Results", f"No documents found containing the terms '{' '.join(terms)}' with {query_type} query.")
 
@@ -208,8 +208,9 @@ def search_gui():
 
     tk.Button(root, text="Search", command=search).pack(pady=20)
 
-    columns = ('Location', 'Found Term', 'Used BiWord', 'Used SkipList', 'Original Term', 'Score')
+    columns = ('Number', 'Location', 'Found Term', 'Used BiWord', 'Used SkipList', 'Original Term', 'Score')
     tree = ttk.Treeview(root, columns=columns, show='headings')
+    tree.heading('Number', text='Number')
     tree.heading('Location', text='Location')
     tree.heading('Found Term', text='Found Term')
     tree.heading('Used BiWord', text='Used BiWord')
