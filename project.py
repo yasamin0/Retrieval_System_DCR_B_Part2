@@ -133,44 +133,50 @@ def search_with_tf_idf(terms, index, biword_index, tf_idf, query_type='AND'):
     if len(terms) == 1:
         query_type = 'OR'
     
+    result = set()
+    used_biword = False
     if query_type == 'AND':
-        if not all_terms:
-            return []
         initial_terms = [term for term in all_terms if term in index]
-        if not initial_terms:
-            return []
-        result = set(index[initial_terms[0]])
-        for term in initial_terms[1:]:
-            result.intersection_update(set(index.get(term, [])))
+        if initial_terms:
+            result = set(index[initial_terms[0]])
+            for term in initial_terms[1:]:
+                result.intersection_update(set(index.get(term, [])))
     elif query_type == 'OR':
-        result = set()
         for term in all_terms:
             result.update(set(index.get(term, [])))
+    
+    # Check biword terms
+    biword_results = set()
+    for i in range(len(terms) - 1):
+        biword = terms[i] + " " + terms[i + 1]
+        if biword in biword_index:
+            biword_results.update(set(biword_index[biword]))
+            used_biword = True
+    
+    result.update(biword_results)
     
     # Calculate scores based on TF-IDF
     scored_results = []
     for doc_id in result:
         score = 0
         used_terms = []
-        used_biword = False
-        used_skiplist = False
         for term in all_terms:
             if term in tf_idf[doc_id]:
                 score += tf_idf[doc_id][term]
                 used_terms.append(term)
-        for biword in biword_index:
-            if biword in tf_idf[doc_id]:
-                used_biword = True
-                score += tf_idf[doc_id][biword]
+        
+        # Check if this document was found by a biword
+        used_biword_in_doc = doc_id in biword_results
+        
         skiplist_postings = index[term][::2]  # Simple skip every second entry
-        if doc_id in skiplist_postings:
-            used_skiplist = True
-        scored_results.append((doc_id, score, used_terms, used_biword, used_skiplist))
+        used_skiplist = doc_id in skiplist_postings
+        
+        scored_results.append((doc_id, score, used_terms, used_biword_in_doc, used_skiplist))
     
     # Sort results by score in descending order
     scored_results.sort(key=lambda x: x[1], reverse=True)
     
-    return [(doc_id, score, used_terms, used_biword, used_skiplist) for doc_id, score, used_terms, used_biword, used_skiplist in scored_results]
+    return [(doc_id, score, used_terms, used_biword_in_doc, used_skiplist) for doc_id, score, used_terms, used_biword_in_doc, used_skiplist in scored_results]
 
 # GUI for Searching
 def search_gui():
